@@ -1,11 +1,11 @@
 """Token 管理相关 API"""
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from store.token import load_tokens, save_tokens
+from store.token import load_tokens, save_tokens, get_newapi_config, save_newapi_config
 from bohe_sign.login import get_bohe_token, verify_bohe_token
 
 router = APIRouter()
@@ -14,6 +14,12 @@ router = APIRouter()
 class SetTokenRequest(BaseModel):
     """设置 Token 请求体"""
     token: str
+
+
+class SetNewApiConfigRequest(BaseModel):
+    """设置 NewAPI 配置请求体"""
+    session: str
+    user_id: str
 
 
 class ApiResponse(BaseModel):
@@ -49,6 +55,11 @@ async def get_token_status() -> ApiResponse:
     linux_do_connect_token = tokens.get("linux_do_connect_token", "")
     bohe_sign_token = tokens.get("bohe_sign_token", "")
     
+    # 获取 NewAPI 配置
+    newapi_config = get_newapi_config()
+    newapi_session = newapi_config.get("session", "")
+    newapi_user_id = newapi_config.get("user_id", "")
+    
     # 检查薄荷 Token 是否有效
     bohe_valid = False
     if bohe_sign_token:
@@ -69,6 +80,11 @@ async def get_token_status() -> ApiResponse:
                 "exists": bool(bohe_sign_token),
                 "valid": bohe_valid,
                 "masked": mask_token(bohe_sign_token) if bohe_sign_token else None
+            },
+            "newapi": {
+                "configured": bool(newapi_session and newapi_user_id),
+                "session_masked": mask_token(newapi_session) if newapi_session else None,
+                "user_id": newapi_user_id if newapi_user_id else None
             }
         }
     )
@@ -131,4 +147,58 @@ async def refresh_bohe_token() -> ApiResponse:
         return ApiResponse(
             success=False,
             message=f"刷新失败：{str(e)}"
+        )
+
+
+@router.get("/newapi", response_model=ApiResponse)
+async def get_newapi_status() -> ApiResponse:
+    """获取 NewAPI 配置状态"""
+    newapi_config = get_newapi_config()
+    session = newapi_config.get("session", "")
+    user_id = newapi_config.get("user_id", "")
+    
+    return ApiResponse(
+        success=True,
+        data={
+            "configured": bool(session and user_id),
+            "session_masked": mask_token(session) if session else None,
+            "user_id": user_id if user_id else None
+        }
+    )
+
+
+@router.post("/newapi", response_model=ApiResponse)
+async def set_newapi_config(request: SetNewApiConfigRequest) -> ApiResponse:
+    """设置 NewAPI 配置"""
+    session = request.session.strip()
+    user_id = request.user_id.strip()
+    
+    if not session:
+        return ApiResponse(
+            success=False,
+            message="Session 不能为空"
+        )
+    
+    if not user_id:
+        return ApiResponse(
+            success=False,
+            message="User ID 不能为空"
+        )
+    
+    # 保存 NewAPI 配置
+    success = save_newapi_config(session, user_id)
+    
+    if success:
+        return ApiResponse(
+            success=True,
+            message="NewAPI 配置已保存",
+            data={
+                "session_masked": mask_token(session),
+                "user_id": user_id
+            }
+        )
+    else:
+        return ApiResponse(
+            success=False,
+            message="保存配置失败"
         )

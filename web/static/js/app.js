@@ -154,7 +154,7 @@ async function fetchTokenStatus() {
     if (result.success && result.data) {
         const data = result.data;
         
-        // 更新状态概览卡片
+        // 更新状态概览卡片 - Token 状态
         const tokenStatusItem = document.getElementById('token-status-item');
         const tokenStatusIcon = document.getElementById('token-status-icon');
         const tokenStatusText = document.getElementById('token-status-text');
@@ -172,6 +172,22 @@ async function fetchTokenStatus() {
             tokenStatusItem.className = 'status-item status-error';
             tokenStatusIcon.textContent = '✕';
             tokenStatusText.textContent = '未配置';
+        }
+        
+        // 更新状态概览卡片 - NewAPI 状态
+        const newapiStatusItem = document.getElementById('newapi-status-item');
+        const newapiStatusIcon = document.getElementById('newapi-status-icon');
+        const newapiStatusText = document.getElementById('newapi-status-text');
+        
+        const newapi = data.newapi;
+        if (newapi && newapi.configured) {
+            newapiStatusItem.className = 'status-item status-success';
+            newapiStatusIcon.textContent = '✓';
+            newapiStatusText.textContent = '已配置';
+        } else {
+            newapiStatusItem.className = 'status-item status-error';
+            newapiStatusIcon.textContent = '✕';
+            newapiStatusText.textContent = '未配置';
         }
         
         // 更新 Token 信息区域
@@ -197,6 +213,21 @@ async function fetchTokenStatus() {
         }
         
         tokenInfo.style.display = 'block';
+        
+        // 更新 NewAPI 信息区域
+        const newapiInfo = document.getElementById('newapi-info');
+        const newapiSessionMasked = document.getElementById('newapi-session-masked');
+        const newapiUserIdDisplay = document.getElementById('newapi-user-id-display');
+        
+        if (newapi && newapi.configured) {
+            newapiSessionMasked.textContent = newapi.session_masked || '-';
+            newapiUserIdDisplay.textContent = newapi.user_id || '-';
+            newapiInfo.style.display = 'block';
+        } else {
+            newapiSessionMasked.textContent = '未设置';
+            newapiUserIdDisplay.textContent = '未设置';
+            newapiInfo.style.display = 'block';
+        }
     }
 }
 
@@ -265,6 +296,66 @@ function toggleTokenVisibility() {
         toggleBtn.textContent = '🙈';
     } else {
         tokenInput.type = 'password';
+        toggleBtn.textContent = '👁️';
+    }
+}
+
+// ================================
+// NewAPI 配置功能
+// ================================
+
+/**
+ * 保存 NewAPI 配置
+ */
+async function saveNewApiConfig() {
+    const sessionInput = document.getElementById('newapi-session');
+    const userIdInput = document.getElementById('newapi-user-id');
+    const saveBtn = document.getElementById('save-newapi-btn');
+    
+    const session = sessionInput.value.trim();
+    const userId = userIdInput.value.trim();
+    
+    if (!session) {
+        showToast('请输入 Session Cookie', 'warning');
+        return;
+    }
+    
+    if (!userId) {
+        showToast('请输入 User ID', 'warning');
+        return;
+    }
+    
+    setButtonLoading(saveBtn, true);
+    
+    const result = await apiRequest('/token/newapi', {
+        method: 'POST',
+        body: JSON.stringify({ session, user_id: userId })
+    });
+    
+    setButtonLoading(saveBtn, false);
+    
+    if (result.success) {
+        showToast('NewAPI 配置保存成功', 'success');
+        sessionInput.value = '';
+        userIdInput.value = '';
+        await fetchTokenStatus();
+    } else {
+        showToast(result.message || '保存失败', 'error');
+    }
+}
+
+/**
+ * 切换 NewAPI Session 输入框可见性
+ */
+function toggleSessionVisibility() {
+    const sessionInput = document.getElementById('newapi-session');
+    const toggleBtn = document.getElementById('toggle-session-visibility');
+    
+    if (sessionInput.type === 'password') {
+        sessionInput.type = 'text';
+        toggleBtn.textContent = '🙈';
+    } else {
+        sessionInput.type = 'password';
         toggleBtn.textContent = '👁️';
     }
 }
@@ -545,6 +636,17 @@ function bindEventListeners() {
     document.getElementById('linux-do-token').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             saveToken();
+        }
+    });
+    
+    // NewAPI 配置
+    document.getElementById('save-newapi-btn').addEventListener('click', saveNewApiConfig);
+    document.getElementById('toggle-session-visibility').addEventListener('click', toggleSessionVisibility);
+    
+    // NewAPI 输入框回车提交
+    document.getElementById('newapi-user-id').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            saveNewApiConfig();
         }
     });
     

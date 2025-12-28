@@ -30,6 +30,11 @@
                     <div class="status-label">Token 状态</div>
                     <div class="status-value" id="token-status-text">检查中...</div>
                 </div>
+                <div class="status-item" id="newapi-status-item">
+                    <div class="status-icon" id="newapi-status-icon">⏳</div>
+                    <div class="status-label">NewAPI 状态</div>
+                    <div class="status-value" id="newapi-status-text">检查中...</div>
+                </div>
                 <div class="status-item" id="sign-status-item">
                     <div class="status-icon" id="sign-status-icon">⏳</div>
                     <div class="status-label">今日签到</div>
@@ -85,9 +90,59 @@
             </div>
         </section>
 
+        <!-- NewAPI 配置卡片 -->
+        <section class="card" id="newapi-card">
+            <h2 class="card-title">🔧 NewAPI 配置</h2>
+            <p class="form-hint" style="margin-bottom: 1rem;">配置 NewAPI 认证信息，用于自动兑换抽奖获得的 CDK</p>
+            <div class="form-group">
+                <label for="newapi-session" class="form-label">Session Cookie</label>
+                <div class="input-group">
+                    <input 
+                        type="password" 
+                        id="newapi-session" 
+                        class="form-input" 
+                        placeholder="请输入 NewAPI Session..."
+                        autocomplete="off"
+                    >
+                    <button type="button" class="btn btn-icon" id="toggle-session-visibility" title="显示/隐藏">
+                        👁️
+                    </button>
+                </div>
+                <p class="form-hint">从浏览器 Cookie 中获取 session 值</p>
+            </div>
+            <div class="form-group">
+                <label for="newapi-user-id" class="form-label">User ID</label>
+                <input 
+                    type="text" 
+                    id="newapi-user-id" 
+                    class="form-input" 
+                    placeholder="请输入 NewAPI User ID..."
+                    autocomplete="off"
+                >
+                <p class="form-hint">从请求头 New-API-User 中获取</p>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" id="save-newapi-btn">
+                    <span class="btn-text">保存 NewAPI 配置</span>
+                    <span class="btn-loading" style="display: none;">保存中...</span>
+                </button>
+            </div>
+            <div class="token-info" id="newapi-info" style="display: none;">
+                <div class="token-info-item">
+                    <span class="token-info-label">Session:</span>
+                    <span class="token-info-value" id="newapi-session-masked">-</span>
+                </div>
+                <div class="token-info-item">
+                    <span class="token-info-label">User ID:</span>
+                    <span class="token-info-value" id="newapi-user-id-display">-</span>
+                </div>
+            </div>
+        </section>
+
         <!-- 签到操作卡片 -->
         <section class="card" id="sign-card">
             <h2 class="card-title">✅ 签到操作</h2>
+            <p class="form-hint" style="margin-bottom: 1rem;">签到流程：抽奖获取 CDK → 自动兑换额度</p>
             <div class="sign-action">
                 <button type="button" class="btn btn-large btn-primary" id="sign-now-btn">
                     <span class="btn-text">🎯 立即签到</span>
