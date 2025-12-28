@@ -1,3 +1,18 @@
+[tool.poetry]
+name = "bohe-api-auto-sign"
+version = "0.1.0"
+description = "Auto sign bohe api with web control panel"
+authors = ["Sn0wo2"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.12"
+linux-do-connect-token = "0.0.2b2"
+fastapi = ">=0.115.0"
+uvicorn = {version = ">=0.32.0", extras = ["standard"]}
+apscheduler = ">=3.10.0"
+
 [project]
 name = "bohe-api-auto-sign"
 version = "0.1.0"
@@ -14,7 +29,6 @@ dependencies = [
     "uvicorn[standard]>=0.32.0",
     "apscheduler>=3.10.0",
 ]
-
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
