@@ -216,15 +216,15 @@ async function fetchTokenStatus() {
         
         // 更新 NewAPI 信息区域
         const newapiInfo = document.getElementById('newapi-info');
-        const newapiSessionMasked = document.getElementById('newapi-session-masked');
+        const newapiAuthorizationMasked = document.getElementById('newapi-authorization-masked');
         const newapiUserIdDisplay = document.getElementById('newapi-user-id-display');
         
         if (newapi && newapi.configured) {
-            newapiSessionMasked.textContent = newapi.session_masked || '-';
+            newapiAuthorizationMasked.textContent = newapi.authorization_masked || '-';
             newapiUserIdDisplay.textContent = newapi.user_id || '-';
             newapiInfo.style.display = 'block';
         } else {
-            newapiSessionMasked.textContent = '未设置';
+            newapiAuthorizationMasked.textContent = '未设置';
             newapiUserIdDisplay.textContent = '未设置';
             newapiInfo.style.display = 'block';
         }
@@ -308,15 +308,15 @@ function toggleTokenVisibility() {
  * 保存 NewAPI 配置
  */
 async function saveNewApiConfig() {
-    const sessionInput = document.getElementById('newapi-session');
+    const authorizationInput = document.getElementById('newapi-authorization');
     const userIdInput = document.getElementById('newapi-user-id');
     const saveBtn = document.getElementById('save-newapi-btn');
     
-    const session = sessionInput.value.trim();
+    const authorization = authorizationInput.value.trim();
     const userId = userIdInput.value.trim();
     
-    if (!session) {
-        showToast('请输入 Session Cookie', 'warning');
+    if (!authorization) {
+        showToast('请输入 Authorization', 'warning');
         return;
     }
     
@@ -329,14 +329,14 @@ async function saveNewApiConfig() {
     
     const result = await apiRequest('/token/newapi', {
         method: 'POST',
-        body: JSON.stringify({ session, user_id: userId })
+        body: JSON.stringify({ authorization, user_id: userId })
     });
     
     setButtonLoading(saveBtn, false);
     
     if (result.success) {
         showToast('NewAPI 配置保存成功', 'success');
-        sessionInput.value = '';
+        authorizationInput.value = '';
         userIdInput.value = '';
         await fetchTokenStatus();
     } else {
@@ -345,17 +345,17 @@ async function saveNewApiConfig() {
 }
 
 /**
- * 切换 NewAPI Session 输入框可见性
+ * 切换 NewAPI Authorization 输入框可见性
  */
-function toggleSessionVisibility() {
-    const sessionInput = document.getElementById('newapi-session');
-    const toggleBtn = document.getElementById('toggle-session-visibility');
+function toggleAuthorizationVisibility() {
+    const authorizationInput = document.getElementById('newapi-authorization');
+    const toggleBtn = document.getElementById('toggle-authorization-visibility');
     
-    if (sessionInput.type === 'password') {
-        sessionInput.type = 'text';
+    if (authorizationInput.type === 'password') {
+        authorizationInput.type = 'text';
         toggleBtn.textContent = '🙈';
     } else {
-        sessionInput.type = 'password';
+        authorizationInput.type = 'password';
         toggleBtn.textContent = '👁️';
     }
 }
@@ -641,7 +641,7 @@ function bindEventListeners() {
     
     // NewAPI 配置
     document.getElementById('save-newapi-btn').addEventListener('click', saveNewApiConfig);
-    document.getElementById('toggle-session-visibility').addEventListener('click', toggleSessionVisibility);
+    document.getElementById('toggle-authorization-visibility').addEventListener('click', toggleAuthorizationVisibility);
     
     // NewAPI 输入框回车提交
     document.getElementById('newapi-user-id').addEventListener('keypress', (e) => {

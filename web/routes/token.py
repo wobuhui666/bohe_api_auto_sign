@@ -18,7 +18,7 @@ class SetTokenRequest(BaseModel):
 
 class SetNewApiConfigRequest(BaseModel):
     """设置 NewAPI 配置请求体"""
-    session: str
+    authorization: str
     user_id: str
 
 
@@ -57,7 +57,7 @@ async def get_token_status() -> ApiResponse:
     
     # 获取 NewAPI 配置
     newapi_config = get_newapi_config()
-    newapi_session = newapi_config.get("session", "")
+    newapi_authorization = newapi_config.get("authorization", "")
     newapi_user_id = newapi_config.get("user_id", "")
     
     # 检查薄荷 Token 是否有效
@@ -82,8 +82,8 @@ async def get_token_status() -> ApiResponse:
                 "masked": mask_token(bohe_sign_token) if bohe_sign_token else None
             },
             "newapi": {
-                "configured": bool(newapi_session and newapi_user_id),
-                "session_masked": mask_token(newapi_session) if newapi_session else None,
+                "configured": bool(newapi_authorization and newapi_user_id),
+                "authorization_masked": mask_token(newapi_authorization) if newapi_authorization else None,
                 "user_id": newapi_user_id if newapi_user_id else None
             }
         }
@@ -154,29 +154,29 @@ async def refresh_bohe_token() -> ApiResponse:
 async def get_newapi_status() -> ApiResponse:
     """获取 NewAPI 配置状态"""
     newapi_config = get_newapi_config()
-    session = newapi_config.get("session", "")
+    authorization = newapi_config.get("authorization", "")
     user_id = newapi_config.get("user_id", "")
     
     return ApiResponse(
         success=True,
         data={
-            "configured": bool(session and user_id),
-            "session_masked": mask_token(session) if session else None,
+            "configured": bool(authorization and user_id),
+            "authorization_masked": mask_token(authorization) if authorization else None,
             "user_id": user_id if user_id else None
         }
     )
 
 
 @router.post("/newapi", response_model=ApiResponse)
-async def set_newapi_config(request: SetNewApiConfigRequest) -> ApiResponse:
+async def set_newapi_config_endpoint(request: SetNewApiConfigRequest) -> ApiResponse:
     """设置 NewAPI 配置"""
-    session = request.session.strip()
+    authorization = request.authorization.strip()
     user_id = request.user_id.strip()
     
-    if not session:
+    if not authorization:
         return ApiResponse(
             success=False,
-            message="Session 不能为空"
+            message="Authorization 不能为空"
         )
     
     if not user_id:
@@ -186,14 +186,14 @@ async def set_newapi_config(request: SetNewApiConfigRequest) -> ApiResponse:
         )
     
     # 保存 NewAPI 配置
-    success = save_newapi_config(session, user_id)
+    success = save_newapi_config(authorization, user_id)
     
     if success:
         return ApiResponse(
             success=True,
             message="NewAPI 配置已保存",
             data={
-                "session_masked": mask_token(session),
+                "authorization_masked": mask_token(authorization),
                 "user_id": user_id
             }
         )

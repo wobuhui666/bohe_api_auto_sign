@@ -18,7 +18,7 @@ def load_tokens() -> Dict[str, Any]:
         "bohe_sign_token": "",
         "linux_do_connect_token": "",
         "linux_do_token": "",
-        "newapi_session": "",
+        "newapi_authorization": "",
         "newapi_user_id": ""
     }
     try:
@@ -34,7 +34,7 @@ def load_tokens() -> Dict[str, Any]:
 def save_tokens(bohe_token: Optional[str] = None,
                 linux_do_connect_token: Optional[str] = None,
                 linux_do_token: Optional[str] = None,
-                newapi_session: Optional[str] = None,
+                newapi_authorization: Optional[str] = None,
                 newapi_user_id: Optional[str] = None) -> None:
     """保存 token 配置"""
     tokens = load_tokens()
@@ -45,8 +45,8 @@ def save_tokens(bohe_token: Optional[str] = None,
         tokens["linux_do_connect_token"] = linux_do_connect_token
     if linux_do_token is not None:
         tokens["linux_do_token"] = linux_do_token
-    if newapi_session is not None:
-        tokens["newapi_session"] = newapi_session
+    if newapi_authorization is not None:
+        tokens["newapi_authorization"] = newapi_authorization
     if newapi_user_id is not None:
         tokens["newapi_user_id"] = newapi_user_id
 
@@ -64,10 +64,15 @@ def get_token(key: str) -> Optional[str]:
     return tokens.get(key)
 
 
-def save_newapi_config(session: str, user_id: str) -> bool:
-    """保存 NewAPI 配置"""
+def save_newapi_config(authorization: str, user_id: str) -> bool:
+    """保存 NewAPI 配置
+    
+    Args:
+        authorization: Authorization header 值
+        user_id: NewAPI 用户 ID
+    """
     try:
-        save_tokens(newapi_session=session, newapi_user_id=user_id)
+        save_tokens(newapi_authorization=authorization, newapi_user_id=user_id)
         return True
     except Exception:
         return False
@@ -77,6 +82,6 @@ def get_newapi_config() -> Dict[str, str]:
     """获取 NewAPI 配置"""
     tokens = load_tokens()
     return {
-        "session": tokens.get("newapi_session", ""),
+        "authorization": tokens.get("newapi_authorization", ""),
         "user_id": tokens.get("newapi_user_id", "")
     }

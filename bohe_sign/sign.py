@@ -109,13 +109,13 @@ async def do_topup(cdk: str) -> Dict[str, Any]:
         兑换结果字典
     """
     newapi_config = get_newapi_config()
-    session_cookie = newapi_config.get("session", "")
+    authorization = newapi_config.get("authorization", "")
     user_id = newapi_config.get("user_id", "")
     
-    if not session_cookie or not user_id:
+    if not authorization or not user_id:
         return {
             "success": False,
-            "message": "未配置 NewAPI 认证信息，请先设置 NewAPI Session 和 User ID"
+            "message": "未配置 NewAPI 认证信息，请先设置 NewAPI Authorization 和 User ID"
         }
     
     try:
@@ -128,8 +128,8 @@ async def do_topup(cdk: str) -> Dict[str, Any]:
                 headers={
                     "Content-Type": "application/json",
                     "Accept": "application/json, text/plain, */*",
-                    "New-API-User": user_id,
-                    "Cookie": f"session={session_cookie}"
+                    "New-Api-User": user_id,
+                    "Authorization": authorization
                 },
                 json={"key": cdk},
                 impersonate=IMPERSONATE
