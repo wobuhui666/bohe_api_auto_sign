@@ -2,10 +2,10 @@
 
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Header
 from pydantic import BaseModel
 
-from bohe_sign.sign import do_sign, get_sign_status
+from bohe_sign.sign import do_sign, get_sign_status, spin
 from store.log import get_sign_logs
 
 router = APIRouter()
@@ -52,4 +52,20 @@ async def get_logs(
     return ApiResponse(
         success=True,
         data=logs_data
+    )
+
+
+@router.post("/spin", response_model=ApiResponse)
+async def spin_checkin(authorization: Optional[str] = Header(None)) -> ApiResponse:
+    """执行转盘抽奖"""
+    if not authorization or not authorization.startswith("Bearer "):
+        return ApiResponse(success=False, message="Authorization header is missing or invalid")
+
+    token = authorization.split(" ")[1]
+    result = await spin(token)
+
+    return ApiResponse(
+        success=result.get("success", False),
+        message=result.get("message", ""),
+        data=result.get("data", {}),
     )

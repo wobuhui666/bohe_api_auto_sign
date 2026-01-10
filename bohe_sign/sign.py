@@ -11,6 +11,7 @@ from store.log import add_sign_log, get_sign_stats
 IMPERSONATE = "chrome"
 SIGN_API = "https://up.x666.me/api/user/sign"
 USER_INFO_API = "https://up.x666.me/api/user/info"
+SPIN_API = "https://up.x666.me/api/checkin/spin"
 
 
 async def do_sign(trigger: str = "manual") -> Dict[str, Any]:
@@ -136,3 +137,41 @@ async def get_sign_status() -> Dict[str, Any]:
             pass
     
     return stats
+
+
+async def spin(token: str) -> Dict[str, Any]:
+    """执行转盘抽奖
+
+    Args:
+        token: 用户薄荷 Token
+
+    Returns:
+        抽奖结果字典
+    """
+    if not token:
+        return {"success": False, "message": "Token not provided"}
+
+    try:
+        async with requests.AsyncSession() as session:
+            r = await session.post(
+                SPIN_API,
+                headers={"Authorization": f"Bearer {token}"},
+                json={},
+                impersonate=IMPERSONATE,
+            )
+
+            if r.status_code == HTTPStatus.OK:
+                result = r.json()
+                return {
+                    "success": result.get("success", False),
+                    "message": result.get("message", ""),
+                    "data": result.get("data", {}),
+                }
+            else:
+                return {
+                    "success": False,
+                    "message": f"Spin request failed, HTTP status code: {r.status_code}",
+                }
+
+    except Exception as e:
+        return {"success": False, "message": f"Spin request exception: {str(e)}"}
